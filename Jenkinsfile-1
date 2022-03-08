@@ -11,5 +11,47 @@ pipeline {
         }
       }
     }
+     stage('SonarQube Quality Gate') {		// blocca o meno la pipeline se il quality gate configurato su Sonarqube fallisce
+            when {
+                expression {
+                    return params.enableQualityGates && params.executeSonarQube
+                }
+            }
+            steps {
+                dir('app') {
+                    sh 'sleep 10'
+                    timeout(time: 10, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
+                }
+            }
+        }
+    
+    /*stage ('Dependency Check') {
+            steps {
+                sh 'echo === security stage ==='
+                sh 'echo === OWASP dependency check ==='
+                sh 'cd old_depproject; mvn clean dependency:copy-dependencies'
+                sh 'cd old_depproject; ./aggregatefordepcheck.sh'
+                dependencyCheckAnalyzer scanpath: 'old_depproject', \
+                  outdir: 'depcheck/report', \
+                  datadir: '/var/jenkins_home/depcheck/nvdupdates', \
+                  hintsFile: '', \
+                  includeVulnReports: true, \
+                  includeCsvReports: true, \
+                  includeHtmlReports: true, \
+                  includeJsonReports: true, \
+                  isAutoupdateDisabled: true, \
+                  skipOnScmChange: false, \
+                  skipOnUpstreamChange: false, \
+                  suppressionFile: '', \
+                  zipExtensions: ''
+
+               dependencyCheckPublisher pattern: 'depchec/report/dependency-check-report.xml', \
+                  failedTotalAll: '0', \
+                  usePreviousBuildAsReference: false
+            }
+        }*/
+    
   }
 }
